@@ -1,0 +1,52 @@
+<head>
+
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>Particle System Demo</title>
+<link rel="stylesheet" href="../lib/dat.gui.css">
+
+<script src="../src/loadshaders.js"></script> 
+<script src="../src/particlesystem.js"></script> 
+<script src="../lib/dat.gui.min.js"></script> 
+<script src="demo.js"></script> 
+  
+
+<script>
+
+var canvas = null;
+var gl = null;
+
+var particleShaderFrag = null;
+var particleShaderVert = null;
+	
+function onShadersLoad(shaders) 
+{
+	particleShaderFrag = shaders[0];
+	particleShaderVert = shaders[1];
+	
+	runDemo(gl,particleShaderVert,particleShaderFrag)
+}
+	
+window.onload = (e) => 
+{
+	//Set up
+	canvas = document.getElementById("canvas");
+	gl = canvas.getContext("webgl");
+	
+	if(!gl)
+	{
+		alert("Unable to initialize WebGL. Your browser may not support it.");
+		return;
+	}
+	
+	//Load shaders
+	loadShaders(gl, ["fs/particle-shader-fragment","vs/particle-shader-vertex"],onShadersLoad,"../src/shaders/");
+	
+}
+
+</script>
+</head>
+
+<body>
+<canvas width = "720" height = "480" id = "canvas"></canvas>
+
+</body>
