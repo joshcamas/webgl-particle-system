@@ -16,6 +16,7 @@ Super simple GPU WebGL particle system
 * Create particles at built-in positions, define random velocity, lifetime, scale, and color ranges, and boom. Super basic particle system!
 
 ### Features To Do
+* Separate rendering and simulation into separate shaders
 * Fix randomized color lerping
 * Add "color over time" feature
 * Add "velocity over time" feature
