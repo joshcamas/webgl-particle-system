@@ -32,3 +32,4 @@ Super simple GPU WebGL particle system
 * Movement noise (based off texture)
 * Color gradient over time (based off texture)
 * Add "Particle System Group", which would be a wrapper over multiple particle systems (to allow for greater numbers of particles)
+* Node Editor?
