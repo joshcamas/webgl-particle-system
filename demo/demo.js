@@ -4,12 +4,12 @@ function buildGUI(particleSystems)
 	var guiData = 
 	{
 		count:128000,
-		scaleA:0.01,
-		scaleB:0.01,
-		lifetimeA:.1,
-		lifetimeB:3,
-		colorA: [ 0, 128, 255 ],
-		colorB: [ 0, 128, 255 ]
+		scaleA:1,
+		scaleB:1.5,
+		lifetimeA:2.3,
+		lifetimeB:3.4,
+		startingColor: [ 255, 255, 255 ],
+		endingColor: [ 0, 0, 255 ]
 	}
 
 	function onGUIChange()
@@ -23,8 +23,9 @@ function buildGUI(particleSystems)
 		particleSystem.lifetimeValue.setRandomLerp(guiData.lifetimeA,guiData.lifetimeB);
 		particleSystem.scaleValue.setRandomLerp(guiData.scaleA,guiData.scaleB);
 		particleSystem.velocityValue.setRandomLerp([0,1,0],[1,1,1])
-		particleSystem.colorValue.setRandomLerp(convertColor(guiData.colorA),convertColor(guiData.colorB))
-		particleSystem.particleCount = guiData.count / 8;
+		particleSystem.startingColorValue.setValue(convertColor(guiData.startingColor));
+		particleSystem.endingColorValue.setValue(convertColor(guiData.endingColor));
+		particleSystem.particleCount = guiData.count;
 		particleSystem.createInitialState();
 		particleSystem.applyShaderValues();
 	}
@@ -33,19 +34,19 @@ function buildGUI(particleSystems)
 	var gui = new dat.GUI({name: 'Particle System'});
 
 	//Count
-	gui.add( guiData, 'count', 0, 64000/4*8).name( 'Particle Count' ).onChange(onGUIChange);
+	gui.add( guiData, 'count', 0, 1000000).name( 'Particle Count' ).onChange(onGUIChange);
 
 	//Lifetime
 	gui.add( guiData, 'lifetimeA', 0.001, 10).name( 'Min Lifetime' ).onChange(onGUIChange);
 	gui.add( guiData, 'lifetimeB', 0.001, 10).name( 'Max Lifetime' ).onChange(onGUIChange);
 
 	//Scale
-	gui.add( guiData, 'scaleA', 0.001, 3).name( 'Min Scale' ).onChange(onGUIChange);
-	gui.add( guiData, 'scaleB', 0.001, 3).name( 'Max Scale' ).onChange(onGUIChange);
+	gui.add( guiData, 'scaleA', 1, 10).name( 'Min Scale' ).onChange(onGUIChange);
+	gui.add( guiData, 'scaleB', 1, 10).name( 'Max Scale' ).onChange(onGUIChange);
 
 	//Color
-	gui.addColor( guiData, 'colorA' ).name( 'Particle Color A' ).onChange(onGUIChange);
-	gui.addColor( guiData, 'colorB' ).name( 'Particle Color B' ).onChange(onGUIChange);
+	gui.addColor( guiData, 'startingColor' ).name( 'Starting Color' ).onChange(onGUIChange);
+	gui.addColor( guiData, 'endingColor' ).name( 'Ending Color' ).onChange(onGUIChange);
 
 	return onGUIChange;
 }
@@ -53,9 +54,9 @@ function buildGUI(particleSystems)
 function convertColor(color)
 {
 	return [
-		parseInt(color[0] / 16),
-		parseInt(color[1] / 16),
-		parseInt(color[2] / 16)];
+		color[0] / 255.0,
+		color[1] / 255.0,
+		color[2] / 255.0];
 }
 
 function runDemo(gl, vertShader, fragShader) {
@@ -70,14 +71,6 @@ function runDemo(gl, vertShader, fragShader) {
 	//Make several particle systems!
 	var particleSystems = [];
 
-	//Push tons of particle systems to upgrade the max number of particles per system (16000)
-	particleSystems.push(new ParticleSystem(gl,shaderProgram));
-	particleSystems.push(new ParticleSystem(gl,shaderProgram));
-	particleSystems.push(new ParticleSystem(gl,shaderProgram));
-	particleSystems.push(new ParticleSystem(gl,shaderProgram));
-	particleSystems.push(new ParticleSystem(gl,shaderProgram));
-	particleSystems.push(new ParticleSystem(gl,shaderProgram));
-	particleSystems.push(new ParticleSystem(gl,shaderProgram));
 	particleSystems.push(new ParticleSystem(gl,shaderProgram));
 
 	updateFunction = buildGUI(particleSystems);
