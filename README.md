@@ -7,18 +7,21 @@ Super simple GPU WebGL particle system. See demo [here](https://joshcamas.github
 * Learn more about WebGL!!
 
 ### Technical Hurdles
-* A single WebGL buffer can only hold 64,000 values - in other words, 16,000 planes / particles. This needs to be taken into account, and possible will require multiple simulators to achieve higher than 16,000 particles.
-
 * Developing modular features when dealing with shaders can be annoying, but since compilation of shaders is done at runtime, this means it could theoretically be possible to "stitch" together a shader during runtime with whatever particle modules are installed. This would make everything super modular and open ended!! 
 
 ### Features Done
-* Particle / buffer initialization 
+#### 8/28/20
 * Create particles at built-in positions, define random velocity, lifetime, scale, and color ranges, and boom. Super basic particle system!
+* Added GUI to demo to play with values
+#### 9/4/20
+* Redesigned shader to use points, not indicies - this removes the 16,000 particle limit per system
+* Fixed dumb color mistake
+* Added "color over time" feature
+* Temporarily fixed time offset issue
 
 ### Features To Do
 * Separate rendering and simulation into separate shaders
 * Fix randomized color lerping
-* Add "color over time" feature
 * Add "velocity over time" feature
 * Add particle rotation feature
 * Add 3D particle scaling feature
