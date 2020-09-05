@@ -1,5 +1,5 @@
 # webgl-particle-system
-Super simple GPU WebGL particle system
+Super simple GPU WebGL particle system. See demo [here](https://joshcamas.github.io/webgl-particle-system/demo/index.html).
 
 ## Project Goals
 * Develop a simple WebGL particle system that simulates entirely on the GPU / shader.
