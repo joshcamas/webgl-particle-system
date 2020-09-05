@@ -9,7 +9,16 @@ function buildGUI(particleSystems)
 		lifetimeA:2.3,
 		lifetimeB:3.4,
 		startingColor: [ 255, 255, 255 ],
-		endingColor: [ 0, 0, 255 ]
+		endingColor: [ 0, 0, 255 ],
+		
+		velocityA1: 0,
+		velocityA2: 1,
+		velocityA3: 0,
+		
+		
+		velocityB1: 1,
+		velocityB2: 1,
+		velocityB3: 1
 	}
 
 	function onGUIChange()
@@ -20,9 +29,12 @@ function buildGUI(particleSystems)
 
 	function updateParticles(particleSystem)
 	{
+		va = [guiData.velocityA1,guiData.velocityA2,guiData.velocityA3];
+		vb = [guiData.velocityB1,guiData.velocityB2,guiData.velocityB3];
+		
 		particleSystem.lifetimeValue.setRandomLerp(guiData.lifetimeA,guiData.lifetimeB);
 		particleSystem.scaleValue.setRandomLerp(guiData.scaleA,guiData.scaleB);
-		particleSystem.velocityValue.setRandomLerp([0,1,0],[1,1,1])
+		particleSystem.velocityValue.setRandomLerp(va,vb);
 		particleSystem.startingColorValue.setValue(convertColor(guiData.startingColor));
 		particleSystem.endingColorValue.setValue(convertColor(guiData.endingColor));
 		particleSystem.particleCount = guiData.count;
@@ -47,7 +59,17 @@ function buildGUI(particleSystems)
 	//Color
 	gui.addColor( guiData, 'startingColor' ).name( 'Starting Color' ).onChange(onGUIChange);
 	gui.addColor( guiData, 'endingColor' ).name( 'Ending Color' ).onChange(onGUIChange);
-
+	
+	var minVelocity = gui.addFolder("Min Velocity");
+	minVelocity.add(guiData, 'velocityA1', -1, 1).name( 'X' ).onChange(onGUIChange);
+	minVelocity.add(guiData, 'velocityA2', -1, 1).name( 'Y' ).onChange(onGUIChange);
+	minVelocity.add(guiData, 'velocityA3', -1, 1).name( 'Z' ).onChange(onGUIChange);
+	
+	var maxVelocity = gui.addFolder("Max Velocity");
+	maxVelocity.add(guiData, 'velocityB1', -1, 1).name( 'X' ).onChange(onGUIChange);
+	maxVelocity.add(guiData, 'velocityB2', -1, 1).name( 'Y' ).onChange(onGUIChange);
+	maxVelocity.add(guiData, 'velocityB3', -1, 1).name( 'Z' ).onChange(onGUIChange);
+	
 	return onGUIChange;
 }
 
