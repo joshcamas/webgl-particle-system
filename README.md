@@ -8,6 +8,7 @@ Super simple GPU WebGL particle system. See demo [here](https://joshcamas.github
 
 ### Technical Hurdles
 * Developing modular features when dealing with shaders can be annoying, but since compilation of shaders is done at runtime, this means it could theoretically be possible to "stitch" together a shader during runtime with whatever particle modules are installed. This would make everything super modular and open ended!! 
+* Currently the particles do not save their states, and merely recalculate their state depending on the time. It would probably be a good idea to instead calculate their new positions/velocities based off the old ones - this could allow for outside forces to affect the particles.
 
 ### Features Done
 #### 8/28/20
@@ -33,6 +34,7 @@ Super simple GPU WebGL particle system. See demo [here](https://joshcamas.github
 * Add gravity module
 
 ## Features That I'll Probably Never Get To
+* External forces
 * Animated textures (atlas)
 * Movement noise (based off texture)
 * Color gradient over time (based off texture)
