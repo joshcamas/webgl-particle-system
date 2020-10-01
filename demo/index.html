@@ -5,6 +5,8 @@
 <link rel="stylesheet" href="../lib/dat.gui.css">
 
 <script src="../src/loadshaders.js"></script> 
+<script src="../src/value.js"></script> 
+<script src="../src/utilities.js"></script> 
 <script src="../src/particlesystem.js"></script> 
 <script src="../lib/dat.gui.min.js"></script> 
 <script src="demo.js"></script> 
@@ -15,22 +17,22 @@
 var canvas = null;
 var gl = null;
 
-var particleShaderFrag = null;
-var particleShaderVert = null;
-	
 function onShadersLoad(shaders) 
 {
-	particleShaderFrag = shaders[0];
-	particleShaderVert = shaders[1];
+	simVert = shaders[0];
+	simFrag = shaders[1];
 	
-	runDemo(gl,particleShaderVert,particleShaderFrag)
+	renVert = shaders[2];
+	renFrag = shaders[3];
+	
+	runDemo(gl,simVert,simFrag,renVert, renFrag)
 }
 	
 window.onload = (e) => 
 {
 	//Set up
 	canvas = document.getElementById("canvas");
-	gl = canvas.getContext("webgl");
+	gl = canvas.getContext("webgl2");
 	
 	if(!gl)
 	{
@@ -39,7 +41,7 @@ window.onload = (e) =>
 	}
 	
 	//Load shaders
-	loadShaders(gl, ["fs/particle-shader-sim-fragment","vs/particle-shader-sim-vertex"],onShadersLoad,"../src/shaders/");
+	loadShaders(gl, ["vs/particle-shader-sim-vertex","fs/particle-shader-sim-fragment","vs/particle-shader-render-vertex","fs/particle-shader-render-fragment"],onShadersLoad,"../src/shaders/");
 	
 }
 

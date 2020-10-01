@@ -1,35 +1,32 @@
+#version 300 es
+precision mediump float;
 
 //Uniforms
+uniform float uDeltaTime;
 uniform float uTime;
-uniform mat4 Pmatrix;
-uniform mat4 Vmatrix;
 
-//Attributes
-attribute vec3 aParticlePosition;
-attribute vec3 aVelocity;
-attribute float aScale;
-attribute float aLifetime;
+//TODO: Add starting values here
 
-attribute vec3 aStartingColor;
-attribute vec3 aEndingColor;
+//Input
+layout (location=0) in vec3 i_position;
+layout (location=1) in vec3 i_velocity;
+layout (location=2) in vec3 i_color;
+layout (location=3) in float i_scale;
+layout (location=4) in float i_gravityStrength;
 
-//Temp
-varying vec3 vColor;
+out vec3 o_position;
+out vec3 o_velocity;
+out vec3 o_color;
+out float o_scale;
+out float o_gravityStrength;
 
-void main(void) { //pre-built function
+void main(void) 
+{
+	vec3 gravityPosition = normalize(vec3(0,0,0) - i_position);
 	
-	float particleTime = mod(uTime, aLifetime);
-
-	float percentOfLife = particleTime / aLifetime;
-	percentOfLife = clamp(percentOfLife, 0.0, 1.0);
-	
-	vec3 npos = aParticlePosition; 
-
-	//Apply velocity
-	npos += (particleTime * aVelocity);
-
-	gl_Position = Pmatrix * Vmatrix * vec4(npos, 1.);
-	gl_PointSize = aScale;
-	
-	vColor = mix(aStartingColor,aEndingColor,percentOfLife);
+	o_velocity = i_velocity + gravityPosition * i_gravityStrength * uDeltaTime;
+	o_position = i_position + o_velocity * uDeltaTime;
+	o_color = i_color + vec3(.1*uDeltaTime,0,0);
+	o_scale = i_scale;
+	o_gravityStrength = i_gravityStrength;
 }

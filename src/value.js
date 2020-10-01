@@ -32,7 +32,7 @@ class ColorValue
         var y = r * (this.singleValue[1] - this.secondaryValue[1]) + this.secondaryValue[1];
         var z = r * (this.singleValue[2] - this.secondaryValue[2]) + this.secondaryValue[2]; 
 
-        return [Math.round(x), Math.round(y), Math.round(z)];
+        return [x,y,z];
     }
 } 
 
@@ -63,6 +63,7 @@ class Vector3Value
 
         return [x, y, z];
     }
+
 } 
 
 class FloatValue
