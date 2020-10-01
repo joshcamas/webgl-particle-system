@@ -8,7 +8,6 @@ Super simple GPU WebGL particle system. See demo [here](https://joshcamas.github
 
 ### Technical Hurdles
 * Developing modular features when dealing with shaders can be annoying, but since compilation of shaders is done at runtime, this means it could theoretically be possible to "stitch" together a shader during runtime with whatever particle modules are installed. This would make everything super modular and open ended!! 
-* Currently the particles do not save their states, and merely recalculate their state depending on the time. It would probably be a good idea to instead calculate their new positions/velocities based off the old ones - this could allow for outside forces to affect the particles.
 
 ### Features Done
 #### 8/28/20
@@ -27,10 +26,11 @@ Super simple GPU WebGL particle system. See demo [here](https://joshcamas.github
 * Added example gravity effect
 
 ### Features To Do
-* Separate rendering and simulation into separate shaders
-* Fix randomized color lerping
+* Make addition of properties easier
+* Add starting positions as simulation shader attributes
+* Remove uneeded attributes in render shader
+* Add ability to have multiple gravity positions with individual strengths (x,y,z,s)
 * Add "velocity over time" feature
-* Add particle rotation feature
 * Add 3D particle scaling feature
 * Add simple texture support
 * Add support for blending modes
