@@ -10,7 +10,18 @@ function randomPosition(range,array)
     array.push(y);
     array.push(z);
     array.push(1);
+}
 
+function randomColor(array)
+{
+    x = Math.random();
+    y = Math.random();
+    z = Math.random();
+
+    array.push(x);
+    array.push(y);
+    array.push(z);
+    array.push(1);
 }
 
 class ParticleSystem
@@ -37,24 +48,28 @@ class ParticleSystem
     {
         gl = this.gl
         
-        this.program_sim = CreateProgram(gl,this.shader_sim_vert,this.shader_sim_frag,["o_Position"]);
+        this.program_sim = CreateProgram(gl,this.shader_sim_vert,this.shader_sim_frag,["o_position","o_color"]);
         this.program_ren = CreateProgram(gl,this.shader_ren_vert,this.shader_ren_frag,[]);
         
-        this.stateA = new ParticleState(gl,this.program_sim,this.program_ren);
+        this.stateA = new ParticleBuffer(gl,this.program_sim,this.program_ren);
         this.stateA.initialize();
 
-        this.stateB = new ParticleState(gl,this.program_sim,this.program_ren);
+        this.stateB = new ParticleBuffer(gl,this.program_sim,this.program_ren);
         this.stateB.initialize();
         
-        var vertices_f = []
+        var initialData = [];
+        var particleCount = 100;
 
-        for(var i = 0; i < 100; i++)
-            randomPosition(1,vertices_f);
+        for(var i = 0; i < particleCount; i++)
+        {
+            randomPosition(1,initialData);
+            randomColor(initialData);
+        }
 
-        this.vertices = new Float32Array(vertices_f);
+        initialData = new Float32Array(initialData);
 
-        this.stateA.setVertices(this.vertices);
-        this.stateB.setVertices(this.vertices);
+        this.stateA.setInitialData(initialData,particleCount);
+        this.stateB.setInitialData(initialData,particleCount);
 
         //Matrices
         this.pMatrix = gl.getUniformLocation(this.program_ren, "Pmatrix");
@@ -81,7 +96,7 @@ class ParticleSystem
         //Update attributes
         gl.uniform1f(this.deltatime, deltatime);
 
-        gl.bindVertexArray(simState.vao_sim);
+        gl.bindVertexArray(simState.sim.vao);
         gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, renderState.buffer);
         
         gl.beginTransformFeedback(gl.POINTS);
@@ -100,7 +115,7 @@ class ParticleSystem
 		gl.uniformMatrix4fv(this.pMatrix, false, projectionMatrix);
 		gl.uniformMatrix4fv(this.vMatrix, false, viewMatrix);
         
-        gl.bindVertexArray(renderState.vao_ren);
+        gl.bindVertexArray(renderState.ren.vao);
         gl.drawArrays(gl.POINTS, 0, renderState.particleCount);
         gl.bindVertexArray(null);
         
@@ -122,60 +137,76 @@ function CreateProgram(gl, vertShader, fragShader, varyings = null)
     return shaderProgram;
 }
 
-class ParticleState
+class ParticleBuffer
 {
     constructor(gl,program_sim,program_ren)
     {
         this.gl = gl;
-        this.program_sim = program_sim;
-        this.program_ren = program_ren;
+
+        this.buffer = gl.createBuffer();
+
+        this.sim = new ParticleBufferSection(gl,program_sim,this.buffer);
+        this.ren = new ParticleBufferSection(gl,program_ren,this.buffer);
     }
 
     initialize()
     {
-        var gl = this.gl;
+        //Attributes for sim
+        gl.bindVertexArray(this.sim.vao);
+        this.sim.addAttribute(0);
+        this.sim.addAttribute(12);
 
-        this.buffer = gl.createBuffer();
-        
-        //Vertex arrays
-        this.vao_sim = gl.createVertexArray()
-        this.vao_ren = gl.createVertexArray()
+        //Attributes for ren
+        gl.bindVertexArray(this.ren.vao);
+        this.ren.addAttribute(0);
+        this.ren.addAttribute(12);
 
-        gl.bindVertexArray(this.vao_sim);
-
-        //THIS SHOULD BE A ATTRIBUTE LOCATION. NOT MANUAL
-        var vertexPosLocation = gl.getAttribLocation(this.program_sim, "i_position")
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-        gl.vertexAttribPointer(vertexPosLocation, 4, gl.FLOAT, false, 0, 0);
-        gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        gl.enableVertexAttribArray(vertexPosLocation);
-
-        //Shoudln't need this
-        gl.bindVertexArray(null);
-
-        gl.bindVertexArray(this.vao_ren);
-
-        //THIS SHOULD BE A ATTRIBUTE LOCATION. NOT MANUAL
-        var vertexPosLocationFeedback = 0;
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-        gl.vertexAttribPointer(vertexPosLocationFeedback, 4, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(vertexPosLocationFeedback);
-
+        //Clean up
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.bindVertexArray(null);
 
     }
 
-    setVertices(vertices)
+    setInitialData(data,particleCount)
     {
         var gl = this.gl;
 
-        this.vertices = vertices;
-        this.particleCount = vertices.length / 4;
+        this.particleCount = particleCount;
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, data, gl.STREAM_DRAW);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
+    }
+}
+
+//There are two sections of a particle buffer - simulation and render 
+class ParticleBufferSection
+{
+    constructor(gl,program,buffer)
+    {
+        this.gl = gl;
+        this.program = program;
+        this.buffer = buffer;
+
+        this.vao = gl.createVertexArray();
+        this.offset = 0;
+    }
+
+    addAttribute(location,num_components=4,type=gl.FLOAT)
+    {
+        var gl = this.gl;
+
+        var stride = 32;
+        var type_size = 4;
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+        gl.vertexAttribPointer(location, num_components, type, false, stride, this.offset);
+        gl.enableVertexAttribArray(location);
+
+        this.offset += num_components * type_size;
+
+        //if(divisor > 0)
+        //    gl.vertexAttribDivisor(location,divisor);
     }
 }
