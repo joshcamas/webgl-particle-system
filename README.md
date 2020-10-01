@@ -20,6 +20,11 @@ Super simple GPU WebGL particle system. See demo [here](https://joshcamas.github
 * Added "color over time" feature
 * Temporarily fixed time offset issue
 * Added velocity GUI to demo
+#### 9/30/20
+* Redesigned system from the ground up
+* Separated rendering and simulation into separate shader programs
+* Made simulation able to store previous data
+* Added example gravity effect
 
 ### Features To Do
 * Separate rendering and simulation into separate shaders
