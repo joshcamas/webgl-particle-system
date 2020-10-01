@@ -1,35 +1,22 @@
-var SIZE_V4C4 = 32;
-
-function randomPosition(range,array)
-{
-    x = Math.random()*range*2 - range;
-    y = Math.random()*range*2 - range;
-    z = Math.random()*range*2 - range;
-
-    array.push(x);
-    array.push(y);
-    array.push(z);
-    array.push(1);
-}
-
-function randomColor(array)
-{
-    x = Math.random();
-    y = Math.random();
-    z = Math.random();
-
-    array.push(x);
-    array.push(y);
-    array.push(z);
-    array.push(1);
-}
 
 class ParticleSystem
 {
     constructor(gl)
     {
         this.gl = gl;
+
         this.simStateA = true;
+
+        this.lifetimeValue = new FloatValue();
+        this.scaleValue = new FloatValue();
+        this.gravityStrengthValue = new FloatValue();
+        this.velocityValue = new Vector3Value();
+        this.positionValue = new Vector3Value();
+        this.startingColorValue = new ColorValue();
+        this.endingColorValue = new ColorValue();
+        this.particleCount = 0;
+
+
     }
 
     setSimShaders(vert,frag)
@@ -44,11 +31,11 @@ class ParticleSystem
         this.shader_ren_frag = frag
     }
 
-    createInitialState()
+    initialize()
     {
         gl = this.gl
         
-        this.program_sim = CreateProgram(gl,this.shader_sim_vert,this.shader_sim_frag,["o_position","o_color"]);
+        this.program_sim = CreateProgram(gl,this.shader_sim_vert,this.shader_sim_frag,["o_position","o_velocity","o_color","o_scale","o_gravityStrength"]);
         this.program_ren = CreateProgram(gl,this.shader_ren_vert,this.shader_ren_frag,[]);
         
         this.stateA = new ParticleBuffer(gl,this.program_sim,this.program_ren);
@@ -57,28 +44,56 @@ class ParticleSystem
         this.stateB = new ParticleBuffer(gl,this.program_sim,this.program_ren);
         this.stateB.initialize();
         
-        var initialData = [];
-        var particleCount = 100;
-
-        for(var i = 0; i < particleCount; i++)
-        {
-            randomPosition(1,initialData);
-            randomColor(initialData);
-        }
-
-        initialData = new Float32Array(initialData);
-
-        this.stateA.setInitialData(initialData,particleCount);
-        this.stateB.setInitialData(initialData,particleCount);
-
         //Matrices
         this.pMatrix = gl.getUniformLocation(this.program_ren, "Pmatrix");
         this.vMatrix = gl.getUniformLocation(this.program_ren, "Vmatrix");
+        this.time = this.gl.getUniformLocation(this.program_sim, "uTime");
         this.deltatime = this.gl.getUniformLocation(this.program_sim, "uDeltaTime");
 
     }
 
-    draw(deltatime,projectionMatrix,viewMatrix)
+    restartSimulation()
+    {
+        var initialData = this.getInitialData();
+
+        this.stateA.setInitialData(initialData,this.particleCount);
+        this.stateB.setInitialData(initialData,this.particleCount);
+
+        console.log("Started Simulation");
+    }
+
+    getInitialData()
+    {
+        var initialData = [];
+
+        for(var i = 0; i < this.particleCount; i++)
+        {
+            var p = this.positionValue.getValue();
+            initialData.push(p[0]);
+            initialData.push(p[1]);
+            initialData.push(p[2]);
+
+            var v = this.velocityValue.getValue();
+            initialData.push(v[0]);
+            initialData.push(v[1]);
+            initialData.push(v[2]);    
+
+            var c = this.startingColorValue.getValue();
+            initialData.push(c[0]);
+            initialData.push(c[1]);
+            initialData.push(c[2]);
+            
+            initialData.push(this.scaleValue.getValue());  
+            initialData.push(this.gravityStrengthValue.getValue())
+        }
+
+        //This... is needed? Why? No idea
+        initialData.push(0);
+        
+        return new Float32Array(initialData);
+    }
+
+    draw(time,deltatime,projectionMatrix,viewMatrix)
     {
         var gl = this.gl;
         
@@ -86,7 +101,7 @@ class ParticleSystem
         var renderState =  this.simStateA ? this.stateB : this.stateA;
         
         //Step 1 - simulate
-
+        
         //Disable raster for simulation
         gl.enable(gl.RASTERIZER_DISCARD);
 
@@ -94,6 +109,7 @@ class ParticleSystem
         gl.useProgram(this.program_sim);
         
         //Update attributes
+        gl.uniform1f(this.time, time);
         gl.uniform1f(this.deltatime, deltatime);
 
         gl.bindVertexArray(simState.sim.vao);
@@ -106,7 +122,7 @@ class ParticleSystem
         //Stop simulation
         gl.disable(gl.RASTERIZER_DISCARD);
         gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, null);
-
+        
         //Step 2 - render
 
         gl.useProgram(this.program_ren);
@@ -119,6 +135,7 @@ class ParticleSystem
         gl.drawArrays(gl.POINTS, 0, renderState.particleCount);
         gl.bindVertexArray(null);
         
+        //Swap buffers
         this.simStateA = !this.simStateA;
 
     }
@@ -152,14 +169,24 @@ class ParticleBuffer
     initialize()
     {
         //Attributes for sim
+        var simstride = 4*3*3 + 4*2;
+
         gl.bindVertexArray(this.sim.vao);
-        this.sim.addAttribute(0);
-        this.sim.addAttribute(12);
+        this.sim.addAttribute("i_position",simstride);
+        this.sim.addAttribute("i_velocity",simstride);
+        this.sim.addAttribute("i_color",simstride);
+        this.sim.addAttribute("i_scale",simstride,1);
+        this.sim.addAttribute("i_gravityStrength",simstride,1);
 
         //Attributes for ren
+        var renstride = 4*3*3 + 4*2;
+
         gl.bindVertexArray(this.ren.vao);
-        this.ren.addAttribute(0);
-        this.ren.addAttribute(12);
+        this.ren.addAttribute("i_position",renstride);
+        this.ren.addAttribute("i_velocity",renstride);
+        this.ren.addAttribute("i_color",renstride);
+        this.ren.addAttribute("i_scale",renstride,1);
+        this.sim.addAttribute("i_gravityStrength",renstride,1);
 
         //Clean up
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -193,20 +220,18 @@ class ParticleBufferSection
         this.offset = 0;
     }
 
-    addAttribute(location,num_components=4,type=gl.FLOAT)
+    addAttribute(name,stride,num_components=3,type=gl.FLOAT)
     {
         var gl = this.gl;
 
-        var stride = 32;
+        //Stride is total size
         var type_size = 4;
 
+        var alocation = gl.getAttribLocation(this.program, name);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-        gl.vertexAttribPointer(location, num_components, type, false, stride, this.offset);
-        gl.enableVertexAttribArray(location);
-
+        gl.vertexAttribPointer(alocation, num_components, type, false, stride, this.offset);
+        gl.enableVertexAttribArray(alocation);
+        
         this.offset += num_components * type_size;
-
-        //if(divisor > 0)
-        //    gl.vertexAttribDivisor(location,divisor);
     }
 }
