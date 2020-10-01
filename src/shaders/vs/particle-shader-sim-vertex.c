@@ -1,35 +1,16 @@
+#version 300 es
 
 //Uniforms
-uniform float uTime;
-uniform mat4 Pmatrix;
-uniform mat4 Vmatrix;
+uniform float uDeltaTime;
 
-//Attributes
-attribute vec3 aParticlePosition;
-attribute vec3 aVelocity;
-attribute float aScale;
-attribute float aLifetime;
+//Input
+layout(location = 0) in vec4 i_position;
 
-attribute vec3 aStartingColor;
-attribute vec3 aEndingColor;
+out vec4 o_Position;
 
-//Temp
-varying vec3 vColor;
+void main(void) 
+{
+	float particleTime = uDeltaTime;
 
-void main(void) { //pre-built function
-	
-	float particleTime = mod(uTime, aLifetime);
-
-	float percentOfLife = particleTime / aLifetime;
-	percentOfLife = clamp(percentOfLife, 0.0, 1.0);
-	
-	vec3 npos = aParticlePosition; 
-
-	//Apply velocity
-	npos += (particleTime * aVelocity);
-
-	gl_Position = Pmatrix * Vmatrix * vec4(npos, 1.);
-	gl_PointSize = aScale;
-	
-	vColor = mix(aStartingColor,aEndingColor,percentOfLife);
+	o_Position = i_position + vec4(0,0.00001*uDeltaTime,0,0);
 }

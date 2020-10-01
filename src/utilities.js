@@ -31,7 +31,7 @@ function createAndBindBuffer(gl, shaderProgram, array, propertyName, dimension =
 	gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 	var location = gl.getAttribLocation(shaderProgram, propertyName);
 	gl.vertexAttribPointer(location, dimension, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(location);
+    gl.enableVertexAttribArray(location);
 }
 
 //Returns a projection depending on an angle
