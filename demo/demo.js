@@ -2,35 +2,35 @@ function SetupGUI(particleSystem)
 {
 	var guiData = 
 	{
-		count:128000,
-		scaleA:0.2,
-		scaleB:0.5,
+		count:528000,
+		scaleA:0.05,
+		scaleB:0.05,
 		lifetimeA:2.3,
 		lifetimeB:3.4,
 		
-		gravityA:3,
-		gravityB:4,
+		gravityA:30,
+		gravityB:30,
 
-		startingColorA: [ 255, 255, 255 ],
-		startingColorB: [ 0, 0, 0 ],
+		startingColorA: [ 255, 0, 0 ],
+		startingColorB: [ 103, 0, 83 ],
 		endingColorA: [ 0, 0, 255 ],
 		endingColorB: [ 0, 0, 255 ],
 		
-		velocityA1: -1,
-		velocityA2: -1,
-		velocityA3: -1,
+		velocityA1: 1,
+		velocityA2: -.3,
+		velocityA3: -2.3,
 		
-		velocityB1: 1,
-		velocityB2: 1,
-		velocityB3: 1,
+		velocityB1: 2,
+		velocityB2: -.3,
+		velocityB3: -2.3,
 		
-		positionA1: 0.5,
-		positionA2: 0.5,
+		positionA1: 1.33,
+		positionA2: -2,
 		positionA3: 0.5,
 		
 		positionB1: 1,
-		positionB2: 1,
-		positionB3: 1
+		positionB2: -1.5,
+		positionB3: 1.2
 	}
 
 	function onGUIChange()
@@ -73,8 +73,8 @@ function SetupGUI(particleSystem)
 	gui.add( guiData, 'scaleB', 0, 1).name( 'Max Scale' ).onChange(onGUIChange);
 
 	//Gravity
-	gui.add( guiData, 'gravityA', 0, 10).name( 'Min Gravity' ).onChange(onGUIChange);
-	gui.add( guiData, 'gravityB', 0, 10).name( 'Max Gravity' ).onChange(onGUIChange);
+	gui.add( guiData, 'gravityA', 0, 30).name( 'Min Gravity' ).onChange(onGUIChange);
+	gui.add( guiData, 'gravityB', 0, 30).name( 'Max Gravity' ).onChange(onGUIChange);
 
 	//Starting Color
 	var startingColor = gui.addFolder("Starting Color");
@@ -133,7 +133,7 @@ function runDemo(gl, sinVertShader, simFragShader, renVertShader, renFragShader)
 	var animate = function (time) {
 
 		var dt = time-timeOld;
-		//rotateY(viewMatrix, dt*0.001);
+		rotateY(viewMatrix, dt*0.001);
 		timeOld = time;
 			
 		gl.enable(gl.DEPTH_TEST);

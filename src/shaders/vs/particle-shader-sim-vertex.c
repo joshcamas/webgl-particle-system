@@ -22,11 +22,13 @@ out float o_gravityStrength;
 
 void main(void) 
 {
-	vec3 gravityPosition = normalize(vec3(0,0,0) - i_position);
-	
-	o_velocity = i_velocity + gravityPosition * i_gravityStrength * uDeltaTime;
+	//vec3 gravityDirection = normalize(vec3(0,0,0) - i_position);
+	vec3 gravityDirection = normalize(vec3(0,0,0) - i_position);
+	float gravityRadius = distance(vec3(0,0,0), i_position);
+
+	o_velocity = i_velocity + i_gravityStrength / pow(gravityRadius,2.) * uDeltaTime * gravityDirection;
 	o_position = i_position + o_velocity * uDeltaTime;
-	o_color = i_color + vec3(.1*uDeltaTime,0,0);
+	o_color = i_color;//vec3(gravityRadius/3.,gravityRadius/3.,gravityRadius/3.) * 
 	o_scale = i_scale;
 	o_gravityStrength = i_gravityStrength;
 }
