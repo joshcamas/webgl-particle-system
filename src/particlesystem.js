@@ -1,4 +1,3 @@
-
 class ParticleSystem
 {
     constructor(gl)
@@ -15,8 +14,6 @@ class ParticleSystem
         this.startingColorValue = new ColorValue();
         this.endingColorValue = new ColorValue();
         this.particleCount = 0;
-
-
     }
 
     setSimShaders(vert,frag)
@@ -35,14 +32,20 @@ class ParticleSystem
     {
         gl = this.gl
         
-        this.program_sim = CreateProgram(gl,this.shader_sim_vert,this.shader_sim_frag,["o_position","o_velocity","o_color","o_scale","o_gravityStrength"]);
+        this.bufferdata = new BufferData();
+        this.bufferdata.addParameter("position",3);
+        this.bufferdata.addParameter("velocity",3);
+        this.bufferdata.addParameter("color",3);
+        this.bufferdata.addParameter("scale",1);
+
+        this.program_sim = CreateProgram(gl,this.shader_sim_vert,this.shader_sim_frag,this.bufferdata.getOutputParameters());
         this.program_ren = CreateProgram(gl,this.shader_ren_vert,this.shader_ren_frag,[]);
         
         this.stateA = new ParticleBuffer(gl,this.program_sim,this.program_ren);
-        this.stateA.initialize();
+        this.stateA.initialize(this.bufferdata);
 
         this.stateB = new ParticleBuffer(gl,this.program_sim,this.program_ren);
-        this.stateB.initialize();
+        this.stateB.initialize(this.bufferdata);
         
         //Matrices
         this.pMatrix = gl.getUniformLocation(this.program_ren, "Pmatrix");
@@ -84,7 +87,7 @@ class ParticleSystem
             initialData.push(c[2]);
             
             initialData.push(this.scaleValue.getValue());  
-            initialData.push(this.gravityStrengthValue.getValue())
+            //initialData.push(this.gravityStrengthValue.getValue())
         }
 
         //This... is needed? Why? No idea
@@ -154,6 +157,7 @@ function CreateProgram(gl, vertShader, fragShader, varyings = null)
     return shaderProgram;
 }
 
+//A master buffer holding both simulation and rendering buffer sections
 class ParticleBuffer
 {
     constructor(gl,program_sim,program_ren)
@@ -166,28 +170,20 @@ class ParticleBuffer
         this.ren = new ParticleBufferSection(gl,program_ren,this.buffer);
     }
 
-    initialize()
+    initialize(bufferData)
     {
-        //Attributes for sim
-        var simstride = 4*3*3 + 4*2;
-
+        var inputParams = bufferData.getInputParameters();
+        
         gl.bindVertexArray(this.sim.vao);
-        this.sim.addAttribute("i_position",simstride);
-        this.sim.addAttribute("i_velocity",simstride);
-        this.sim.addAttribute("i_color",simstride);
-        this.sim.addAttribute("i_scale",simstride,1);
-        this.sim.addAttribute("i_gravityStrength",simstride,1);
 
-        //Attributes for ren
-        var renstride = 4*3*3 + 4*2;
-
+        for(var i = 0; i < inputParams.length; i++)
+            this.sim.addAttribute(inputParams[i],bufferData.stride,bufferData.parameters[i].num_components);
+            
         gl.bindVertexArray(this.ren.vao);
-        this.ren.addAttribute("i_position",renstride);
-        this.ren.addAttribute("i_velocity",renstride);
-        this.ren.addAttribute("i_color",renstride);
-        this.ren.addAttribute("i_scale",renstride,1);
-        this.sim.addAttribute("i_gravityStrength",renstride,1);
-
+        
+        for(var i = 0; i < inputParams.length; i++)
+            this.ren.addAttribute(inputParams[i],bufferData.stride,bufferData.parameters[i].num_components);
+            
         //Clean up
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.bindVertexArray(null);
@@ -233,5 +229,42 @@ class ParticleBufferSection
         gl.enableVertexAttribArray(alocation);
         
         this.offset += num_components * type_size;
+    }
+}
+
+//Holds a list of attributes that is used for both buffer sections. 
+//The ID is special - input values will be "i_attributeid", while output values will be "o_attributeid"
+class BufferData
+{
+    constructor()
+    {
+        this.parameters = [];
+        this.stride = 0;
+    }
+
+    addParameter(id, num_components)
+    {
+        this.parameters.push({id:id,num_components:num_components});
+        this.stride += 4*num_components;
+    }
+
+    getOutputParameters()
+    {
+        var outputParams = [];
+
+        for(var i = 0; i < this.parameters.length; i++)
+            outputParams.push("o_" +  this.parameters[i].id);
+
+        return outputParams;
+    }
+    
+    getInputParameters()
+    {
+        var inputParams = [];
+
+        for(var i = 0; i < this.parameters.length; i++)
+            inputParams.push("i_" +  this.parameters[i].id);
+
+        return inputParams;
     }
 }
