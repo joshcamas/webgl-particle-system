@@ -46,7 +46,7 @@ function SetupGUI(particleSystem)
 		pa = [guiData.positionA1,guiData.positionA2,guiData.positionA3];
 		pb = [guiData.positionB1,guiData.positionB2,guiData.positionB3];
 
-		particleSystem.gravityStrengthValue.setRandomLerp(guiData.gravityA,guiData.gravityB);
+		//particleSystem.gravityStrengthValue.setRandomLerp(guiData.gravityA,guiData.gravityB);
 
 		particleSystem.lifetimeValue.setRandomLerp(guiData.lifetimeA,guiData.lifetimeB);
 		particleSystem.scaleValue.setRandomLerp(guiData.scaleA,guiData.scaleB);
@@ -73,8 +73,8 @@ function SetupGUI(particleSystem)
 	gui.add( guiData, 'scaleB', 0, 1).name( 'Max Scale' ).onChange(onGUIChange);
 
 	//Gravity
-	gui.add( guiData, 'gravityA', 0, 30).name( 'Min Gravity' ).onChange(onGUIChange);
-	gui.add( guiData, 'gravityB', 0, 30).name( 'Max Gravity' ).onChange(onGUIChange);
+	//gui.add( guiData, 'gravityA', 0, 30).name( 'Min Gravity' ).onChange(onGUIChange);
+	//gui.add( guiData, 'gravityB', 0, 30).name( 'Max Gravity' ).onChange(onGUIChange);
 
 	//Starting Color
 	var startingColor = gui.addFolder("Starting Color");
@@ -113,7 +113,7 @@ function runDemo(gl, sinVertShader, simFragShader, renVertShader, renFragShader)
 {
 	console.log("Starting");
 
-	var particleSystem = new ParticleSystem(gl)
+	var particleSystem = new SimpleParticleSystem(gl)
 	particleSystem.setSimShaders(sinVertShader,simFragShader)
 	particleSystem.setRenderShaders(renVertShader,renFragShader)
 	particleSystem.initialize();

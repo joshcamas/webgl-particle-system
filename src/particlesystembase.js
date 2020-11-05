@@ -1,19 +1,26 @@
-class ParticleSystem
+
+//Base particle system class - this contains no hardcoded parameters - no position, colors, etc
+class ParticleSystemBase
 {
     constructor(gl)
     {
         this.gl = gl;
 
         this.simStateA = true;
-
-        this.lifetimeValue = new FloatValue();
-        this.scaleValue = new FloatValue();
-        this.gravityStrengthValue = new FloatValue();
-        this.velocityValue = new Vector3Value();
-        this.positionValue = new Vector3Value();
-        this.startingColorValue = new ColorValue();
-        this.endingColorValue = new ColorValue();
         this.particleCount = 0;
+
+    }
+
+    //Override this to set buffer data
+    _getBufferData()
+    {
+        return new BufferData();
+    }
+
+    //Override this to define initial attribute values per particle
+    _getInitialData()
+    {
+        return [];
     }
 
     setSimShaders(vert,frag)
@@ -32,11 +39,7 @@ class ParticleSystem
     {
         gl = this.gl
         
-        this.bufferdata = new BufferData();
-        this.bufferdata.addParameter("position",3);
-        this.bufferdata.addParameter("velocity",3);
-        this.bufferdata.addParameter("color",3);
-        this.bufferdata.addParameter("scale",1);
+        this.bufferdata = this._getBufferData();
 
         this.program_sim = CreateProgram(gl,this.shader_sim_vert,this.shader_sim_frag,this.bufferdata.getOutputParameters());
         this.program_ren = CreateProgram(gl,this.shader_ren_vert,this.shader_ren_frag,[]);
@@ -52,48 +55,16 @@ class ParticleSystem
         this.vMatrix = gl.getUniformLocation(this.program_ren, "Vmatrix");
         this.time = this.gl.getUniformLocation(this.program_sim, "uTime");
         this.deltatime = this.gl.getUniformLocation(this.program_sim, "uDeltaTime");
-
     }
 
     restartSimulation()
     {
-        var initialData = this.getInitialData();
+        var initialData = this._getInitialData();
 
         this.stateA.setInitialData(initialData,this.particleCount);
         this.stateB.setInitialData(initialData,this.particleCount);
 
         console.log("Started Simulation");
-    }
-
-    getInitialData()
-    {
-        var initialData = [];
-
-        for(var i = 0; i < this.particleCount; i++)
-        {
-            var p = this.positionValue.getValue();
-            initialData.push(p[0]);
-            initialData.push(p[1]);
-            initialData.push(p[2]);
-
-            var v = this.velocityValue.getValue();
-            initialData.push(v[0]);
-            initialData.push(v[1]);
-            initialData.push(v[2]);    
-
-            var c = this.startingColorValue.getValue();
-            initialData.push(c[0]);
-            initialData.push(c[1]);
-            initialData.push(c[2]);
-            
-            initialData.push(this.scaleValue.getValue());  
-            //initialData.push(this.gravityStrengthValue.getValue())
-        }
-
-        //This... is needed? Why? No idea
-        initialData.push(0);
-        
-        return new Float32Array(initialData);
     }
 
     draw(time,deltatime,projectionMatrix,viewMatrix)
