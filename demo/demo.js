@@ -16,21 +16,21 @@ function SetupGUI(particleSystem)
 		endingColorA: [ 0, 0, 255 ],
 		endingColorB: [ 0, 0, 255 ],
 		
-		velocityA1: 1,
-		velocityA2: -.3,
-		velocityA3: -2.3,
+		velocityA1: -0.2,
+		velocityA2: 0.1,
+		velocityA3: -0.2,
 		
-		velocityB1: 2,
-		velocityB2: -.3,
-		velocityB3: -2.3,
+		velocityB1: .2,
+		velocityB2: .5,
+		velocityB3: .2,
 		
-		positionA1: 1.33,
-		positionA2: -2,
-		positionA3: 0.5,
+		positionA1: -1,
+		positionA2: 0,
+		positionA3: -1,
 		
 		positionB1: 1,
-		positionB2: -1.5,
-		positionB3: 1.2
+		positionB2: 0,
+		positionB3: 1
 	}
 
 	function onGUIChange()

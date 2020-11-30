@@ -7,11 +7,11 @@ class SimpleParticleSystem extends ParticleSystemBase
         
         this.lifetimeValue = new FloatValue();
         this.scaleValue = new FloatValue();
-        this.gravityStrengthValue = new FloatValue();
         this.velocityValue = new Vector3Value();
         this.positionValue = new Vector3Value();
         this.startingColorValue = new ColorValue();
         this.endingColorValue = new ColorValue();
+        //this.gravityStrengthValue = new FloatValue();
     }
 
     _getBufferData()
@@ -24,7 +24,6 @@ class SimpleParticleSystem extends ParticleSystemBase
         return bufferdata;
     }
 
-    
     _getInitialData()
     {
         var initialData = [];
