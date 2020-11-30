@@ -109,8 +109,65 @@ function SetupGUI(particleSystem)
 	return onGUIChange;
 }
 
+var lastMousePosition = [0, 0]
+var dragging = false
+var canvas = null;
+var rx = 0;
+var ry = 0;
+var zoom = 10;
+
+function setupControls()
+{
+	canvas.addEventListener('mousedown', onMouseDown, false)
+	canvas.addEventListener('wheel', onWheel,false);
+	window.addEventListener('mousemove', onMouseMove, false)
+	window.addEventListener('mouseup', onMouseUp, false)
+}
+
+function getCursorPosition(canvas, event) {
+    const rect = canvas.getBoundingClientRect()
+    const x = event.clientX - rect.left
+	const y = event.clientY - rect.top
+	return [x,y];
+}
+
+function onWheel(e)
+{
+	zoom += e.deltaY*0.1 ;
+
+	if(zoom < 0.1)
+		zoom = 0.1;
+}
+
+function onMouseDown(e)
+{
+	lastMousePosition = getCursorPosition(canvas,e);
+    dragging = true
+}
+
+function onMouseUp(e)
+{
+	dragging = false
+}
+
+function onMouseMove(e)
+{
+	if(dragging == false)
+		return;
+
+	var newMousePosition = getCursorPosition(canvas,e);
+	var dx = newMousePosition[0] - lastMousePosition[0];
+	var dy = newMousePosition[1] - lastMousePosition[1];
+
+	rx -= dx*0.005;
+	ry += dy*0.001;
+	lastMousePosition = newMousePosition;
+}
+
 function runDemo(gl, sinVertShader, simFragShader, renVertShader, renFragShader) 
 {
+	setupControls();
+
 	console.log("Starting");
 
 	var particleSystem = new SimpleParticleSystem(gl)
@@ -123,19 +180,29 @@ function runDemo(gl, sinVertShader, simFragShader, renVertShader, renFragShader)
 
 	
 	var projectionMatrix = get_projection(40, canvas.width / canvas.height, 1, 100);
-	var viewMatrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-
-	// translating z
-	viewMatrix[14] = viewMatrix[14] - 6;//zoom out
 
 	var timeOld = 0;
 
 	var animate = function (time) {
 
 		var dt = time-timeOld;
-		rotateY(viewMatrix, dt*0.001);
+
+		//Camera 
+		var cameraMatrix = m4.translate(m4.identity(),zoom*Math.sin(rx),zoom*Math.sin(ry*4),zoom*Math.cos(rx));
+		var up = [0, 1, 0];
+		
+		var cameraPosition = [
+			cameraMatrix[12],
+			cameraMatrix[13],
+			cameraMatrix[14],
+		  ];
+		  
+		cameraMatrix = m4.lookAt(cameraPosition, [0,2,0], up);
+
 		timeOld = time;
-			
+		
+		viewMatrix = m4.inverse(cameraMatrix);
+
 		gl.enable(gl.DEPTH_TEST);
 		gl.depthFunc(gl.LEQUAL);
 		gl.clearColor(0.5, 0.5, 0.5, 0.9);
