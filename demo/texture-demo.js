@@ -33,7 +33,7 @@ function runDemo(gl, sinVertShader, simFragShader, renVertShader, renFragShader)
 	
 	particleSystem.restartSimulation();
 
-	var projectionMatrix = get_projection(40, canvas.width / canvas.height, 1, 100);
+	var projectionMatrix = get_projection(40, canvas.width / canvas.height, 0.1, 100);
 
 	var timeOld = 0;
 
@@ -57,11 +57,11 @@ function runDemo(gl, sinVertShader, simFragShader, renVertShader, renFragShader)
 		
 		viewMatrix = m4.inverse(cameraMatrix);
 
-		//gl.enable(gl.DEPTH_TEST);
-		//gl.depthFunc(gl.LEQUAL);
+		gl.enable(gl.DEPTH_TEST);
+		gl.depthFunc(gl.LESS);
 		gl.disable(gl.CULL_FACE);
 		gl.clearColor(0.5, 0.5, 0.5, 0.9);
-		//gl.clearDepth(1.0);
+		gl.clearDepth(1.0);
 		gl.viewport(0.0, 0.0, canvas.width, canvas.height);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
