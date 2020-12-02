@@ -1,4 +1,23 @@
 
+//Base Module
+class ParticleModule
+{    
+    constructor(particleSystem)
+    {
+        this.particleSystem = particleSystem;
+    }
+
+    draw(time,deltatime) 
+    {
+
+    }
+
+    initialize(program_sim, program_ren)
+    {
+
+    }
+}
+
 //Base particle system class - this contains no hardcoded parameters - no position, colors, etc
 class ParticleSystemBase
 {
@@ -8,7 +27,8 @@ class ParticleSystemBase
 
         this.simStateA = true;
         this.particleCount = 0;
-
+        this.modules = [];
+        this.initialized = false;
     }
 
     //Override this to set buffer data
@@ -21,6 +41,15 @@ class ParticleSystemBase
     _getInitialData()
     {
         return [];
+    }
+
+    addModule(particleModule)
+    {
+        this.modules.push(particleModule);
+
+        //Already initialized particle system, so initialize particle module
+        if(this.initialized)
+            particleModule.initialize(this.program_sim, this.program_ren);
     }
 
     setSimShaders(vert,frag)
@@ -55,6 +84,33 @@ class ParticleSystemBase
         this.vMatrix = gl.getUniformLocation(this.program_ren, "Vmatrix");
         this.time = this.gl.getUniformLocation(this.program_sim, "uTime");
         this.deltatime = this.gl.getUniformLocation(this.program_sim, "uDeltaTime");
+        
+        //Apply empty texture for particle texture
+        this.applyEmptyTexture(this.gl.getUniformLocation(this.program_ren, 'particleTexture'), this.gl.TEXTURE0, 0);
+
+        this.initialized = true;
+
+        for(var i = 0; i < this.modules.length; i++)
+            this.modules[i].initialize(this.program_sim, this.program_ren);
+
+    }
+
+    //Applies a 1x1 white pixel to a uniform location
+    applyEmptyTexture(uniformLocation,textureUnit,textureUnitNumber)
+    {
+        var gl = this.gl;
+
+        var texture = gl.createTexture();
+
+        gl.activeTexture(textureUnit);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+
+        var pixel = new Uint8Array([255, 255, 255, 255]);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
+                      1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+                      pixel);
+        
+        gl.uniform1i(uniformLocation, textureUnitNumber);
     }
 
     restartSimulation()
@@ -69,6 +125,9 @@ class ParticleSystemBase
 
     draw(time,deltatime,projectionMatrix,viewMatrix)
     {
+        for(var i = 0; i < this.modules.length; i++)
+            this.modules[i].draw(time,deltatime);
+
         var gl = this.gl;
         
         var simState = this.simStateA ? this.stateA : this.stateB;

@@ -145,65 +145,12 @@ function SetupGUI(particleSystem)
 	return onGUIChange;
 }
 
-var lastMousePosition = [0, 0]
-var dragging = false
-var canvas = null;
-var rx = 0;
-var ry = 0;
-var zoom = 10;
-
-function setupControls()
-{
-	canvas.addEventListener('mousedown', onMouseDown, false)
-	canvas.addEventListener('wheel', onWheel,false);
-	window.addEventListener('mousemove', onMouseMove, false)
-	window.addEventListener('mouseup', onMouseUp, false)
-}
-
-function getCursorPosition(canvas, event) {
-    const rect = canvas.getBoundingClientRect()
-    const x = event.clientX - rect.left
-	const y = event.clientY - rect.top
-	return [x,y];
-}
-
-function onWheel(e)
-{
-	zoom += e.deltaY*0.1 ;
-
-	if(zoom < 0.1)
-		zoom = 0.1;
-}
-
-function onMouseDown(e)
-{
-	lastMousePosition = getCursorPosition(canvas,e);
-    dragging = true
-}
-
-function onMouseUp(e)
-{
-	dragging = false
-}
-
-function onMouseMove(e)
-{
-	if(dragging == false)
-		return;
-
-	var newMousePosition = getCursorPosition(canvas,e);
-	var dx = newMousePosition[0] - lastMousePosition[0];
-	var dy = newMousePosition[1] - lastMousePosition[1];
-
-	rx -= dx*0.005;
-	ry += dy*0.001;
-	lastMousePosition = newMousePosition;
-}
+var input;
 
 function runDemo(gl, sinVertShader, simFragShader, renVertShader, renFragShader) 
 {
-	setupControls();
-
+	input = new Input(canvas);
+	
 	console.log("Starting");
 
 	var particleSystem = new SimpleParticleSystem(gl)
@@ -224,7 +171,7 @@ function runDemo(gl, sinVertShader, simFragShader, renVertShader, renFragShader)
 		var dt = time-timeOld;
 
 		//Camera 
-		var cameraMatrix = m4.translate(m4.identity(),zoom*Math.sin(rx),3+zoom*Math.sin(ry*4),zoom*Math.cos(rx));
+		var cameraMatrix = m4.translate(m4.identity(),input.zoom*Math.sin(input.rx),3+input.zoom*Math.sin(input.ry*4),input.zoom*Math.cos(input.rx));
 		var up = [0, 1, 0];
 		
 		var cameraPosition = [

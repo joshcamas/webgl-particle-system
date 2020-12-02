@@ -9,7 +9,7 @@ class Light
     }
 }
 
-//A particle system with builtin 
+//A particle system with builtin randomization values
 class SimpleParticleSystem extends ParticleSystemBase
 {    
     constructor(gl)
@@ -19,6 +19,7 @@ class SimpleParticleSystem extends ParticleSystemBase
         this.lifetimeValue = new FloatValue();
         this.scaleValue = new FloatValue();
         this.velocityValue = new Vector3Value();
+        this.rotationalVelocityValue = new FloatValue();
         this.positionValue = new Vector3Value();
         this.startingColorValue = new ColorValue();
         this.endingColorValue = new ColorValue();
@@ -79,6 +80,7 @@ class SimpleParticleSystem extends ParticleSystemBase
         bufferdata.addParameter("velocity",3);
         bufferdata.addParameter("color",3);
         bufferdata.addParameter("scale",1);
+        //bufferdata.addParameter("rotation",1);
         return bufferdata;
     }
 
@@ -104,6 +106,8 @@ class SimpleParticleSystem extends ParticleSystemBase
             initialData.push(c[2]);
             
             initialData.push(this.scaleValue.getValue());  
+            
+            //initialData.push(this.rotationalVelocityValue.getValue());  
             //initialData.push(this.gravityStrengthValue.getValue())
         }
 
