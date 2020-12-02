@@ -11,8 +11,8 @@ function SetupGUI(particleSystem)
 		gravityA:30,
 		gravityB:30,
 
-		startingColorA: [ 255, 0, 0 ],
-		startingColorB: [ 103, 0, 83 ],
+		startingColorA: [ 255, 255, 255 ],
+		startingColorB: [ 255, 255, 255 ],
 		endingColorA: [ 0, 0, 255 ],
 		endingColorB: [ 0, 0, 255 ],
 		
@@ -30,7 +30,15 @@ function SetupGUI(particleSystem)
 		
 		positionB1: 1,
 		positionB2: 0,
-		positionB3: 1
+		positionB3: 1,
+		
+		ambientColor: [ 50, 50, 50],
+		lightColor: [ 255, 0, 0 ],
+		lightPositionX: -1.3,
+		lightPositionY: 1,
+		lightPositionZ: 0,
+		lightIntensity: 1,
+		lightRange: 1,
 	}
 
 	function onGUIChange()
@@ -38,6 +46,20 @@ function SetupGUI(particleSystem)
 		updateParticles(particleSystem);
 	}
 
+	function onLightGUIChange()
+	{
+		var lp = [guiData.lightPositionX,guiData.lightPositionY,guiData.lightPositionZ];
+
+		var light = new Light();
+		light.color = convertColor(guiData.lightColor);
+		light.position = lp;
+		light.intensity = guiData.lightIntensity;
+		light.range = guiData.lightRange;
+
+		particleSystem.setLighting(light,convertColor(guiData.ambientColor))
+
+	}
+	
 	function updateParticles(particleSystem)
 	{
 		va = [guiData.velocityA1,guiData.velocityA2,guiData.velocityA3];
@@ -55,6 +77,9 @@ function SetupGUI(particleSystem)
 		particleSystem.startingColorValue.setRandomLerp(convertColor(guiData.startingColorA),convertColor(guiData.startingColorB));
 		particleSystem.endingColorValue.setRandomLerp(convertColor(guiData.endingColorA),convertColor(guiData.endingColorB));
 		particleSystem.particleCount = guiData.count;
+
+		onLightGUIChange();
+
 		particleSystem.restartSimulation();
 	}
 
@@ -105,6 +130,17 @@ function SetupGUI(particleSystem)
 	maxVelocity.add(guiData, 'velocityB1', -5, 5).name( 'X' ).onChange(onGUIChange);
 	maxVelocity.add(guiData, 'velocityB2', -5, 5).name( 'Y' ).onChange(onGUIChange);
 	maxVelocity.add(guiData, 'velocityB3', -5, 5).name( 'Z' ).onChange(onGUIChange);
+	
+	var ambLighting = gui.addFolder("Ambient Lighting");
+	ambLighting.addColor( guiData, 'ambientColor' ).name( 'Color' ).onChange(onLightGUIChange);
+
+	var lighting = gui.addFolder("Light");
+	lighting.addColor( guiData, 'lightColor' ).name( 'Color' ).onChange(onLightGUIChange);
+	lighting.add(guiData, 'lightIntensity', 0, 10).name( 'Intensity' ).onChange(onLightGUIChange);
+	lighting.add(guiData, 'lightRange', 0.1, 5).name( 'Range' ).onChange(onLightGUIChange);
+	lighting.add(guiData, 'lightPositionX', -3, 3).name( 'X' ).onChange(onLightGUIChange);
+	lighting.add(guiData, 'lightPositionY', -3, 3).name( 'Y' ).onChange(onLightGUIChange);
+	lighting.add(guiData, 'lightPositionZ', -3, 3).name( 'Z' ).onChange(onLightGUIChange);
 	
 	return onGUIChange;
 }
@@ -188,7 +224,7 @@ function runDemo(gl, sinVertShader, simFragShader, renVertShader, renFragShader)
 		var dt = time-timeOld;
 
 		//Camera 
-		var cameraMatrix = m4.translate(m4.identity(),zoom*Math.sin(rx),zoom*Math.sin(ry*4),zoom*Math.cos(rx));
+		var cameraMatrix = m4.translate(m4.identity(),zoom*Math.sin(rx),3+zoom*Math.sin(ry*4),zoom*Math.cos(rx));
 		var up = [0, 1, 0];
 		
 		var cameraPosition = [
